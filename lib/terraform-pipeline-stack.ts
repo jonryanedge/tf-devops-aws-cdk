@@ -11,7 +11,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-    const infraRepo = new codecommit.Repository(this, 'infraRepo', {
+    const infraRepo = new codecommit.Repository(this, 'networkRepo', {
       repositoryName: 'TerraformNetworkInfrastructure',
       description: 'Repo of Terraform constructs for deployment'
     });
