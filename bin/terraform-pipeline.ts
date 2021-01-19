@@ -11,8 +11,8 @@ const env = {
 
 const params = {
     deploymentId: 'Test',
-    dbLockTable: 'tfDbLock-Test',
-    repoName: 'tfCoreNetwork-Test',
+    dbLockTable: 'tf-State-Lock',
+    repoName: 'tfCoreNetwork',
 }
 
 const app = new cdk.App();
@@ -25,6 +25,6 @@ new TerraformRepoStack(app, 'repo', {
 new TerraformPipelineStack(app, 'pipeline', {
     env: env,
     deploymentId: params.deploymentId,
-    dbLockTable: 'tfDbLock-Test',
+    dbLockTable: params.dbLockTable,
     repoName: params.repoName
 });
