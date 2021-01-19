@@ -16,12 +16,12 @@ export class TerraformPipelineStack extends cdk.Stack {
       description: 'Repo of Terraform constructs for deployment'
     });
 
-    const pipelineBucket = new s3.Bucket(this, 'piplineBucket', {
+    const pipelineBucket = new s3.Bucket(this, 'pipelineBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
     const tfDatabase = new db.Table(this, 'tf-state-lock', {
-      tableName: 'terraform-state-lock-db',
+      tableName: 'db-tfState',
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
     })
 
