@@ -17,12 +17,13 @@ export class TerraformPipelineStack extends cdk.Stack {
   constructor(scope: cdk.Construct, id: string, props: TfStackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
-    const pipelineBucket = new s3.Bucket(this, 'artifacts', {
+    // define bucket for pipeline artifacts
+    const pBucket = new s3.Bucket(this, 'artifacts', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+      bucketName: props.deploymentId + '-pArtifacts',
     });
 
-    const tfDatabase = new db.Table(this, 'tf-state-lock', {
+    const tfDb = new db.Table(this, 'tfDb', {
       tableName: props.dbLockTable,
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
     });
@@ -32,19 +33,20 @@ export class TerraformPipelineStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
     });
 
-    tfPipelineRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+    const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
+      roleName: 'tfBuildRole-' + props.deploymentId,
+      assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
+    });
 
-    // const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
-    //   roleName: 'tfBuildRole-' + props.deploymentId,
-    //   assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
-    //   managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
-    // });
+    tfPipelineRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+    tfBuildRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+
 
     const srcOutput = new pipeline.Artifact();
     const tfBuildOutput = new pipeline.Artifact('tfBuildOutput');
     const terraformPipeline = new pipeline.Pipeline(this, 'terraformPipeline', {
       role: tfPipelineRole,
-      artifactBucket: pipelineBucket,
+      artifactBucket: pBucket,
       stages: [
         {
           stageName: 'Source',
@@ -60,14 +62,14 @@ export class TerraformPipelineStack extends cdk.Stack {
           stageName: 'Build',
           actions: [
             new actions.CodeBuildAction({
-              role: tfPipelineRole,
+              role: tfBuildRole,
               actionName: 'Terraform_Build',
               project: new build.PipelineProject(this, 'TerraformBuild', {
                 environment: {
                   buildImage: build.LinuxBuildImage.STANDARD_4_0,
                   privileged: true,
                   environmentVariables: {
-                    TF_COMMAND: {value: 'apply', type: build.BuildEnvironmentVariableType.PLAINTEXT}
+                    TF_COMMAND: { value: 'apply', type: build.BuildEnvironmentVariableType.PLAINTEXT }
                   }
                 },
                 buildSpec: build.BuildSpec.fromSourceFilename(''),
@@ -78,6 +80,18 @@ export class TerraformPipelineStack extends cdk.Stack {
           ],
         }
       ]
+    });
+
+    new cdk.CfnOutput(this, 'stackId', {
+      value: props.deploymentId,
+    });
+
+    new cdk.CfnOutput(this, 'dbTableName', {
+      value: props.dbLockTable,
+    });
+
+    new cdk.CfnOutput(this, 'bucketName', {
+      value: pBucket.bucketName,
     });
   }
 }

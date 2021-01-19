@@ -1,11 +1,5 @@
 import * as cdk from '@aws-cdk/core';
 import * as codecommit from '@aws-cdk/aws-codecommit';
-import * as s3 from '@aws-cdk/aws-s3';
-import * as iam from '@aws-cdk/aws-iam';
-import * as pipeline from '@aws-cdk/aws-codepipeline';
-import * as actions from '@aws-cdk/aws-codepipeline-actions';
-import * as build from '@aws-cdk/aws-codebuild';
-import * as db from '@aws-cdk/aws-dynamodb';
 
 interface TfStackProps extends cdk.StackProps {
   deploymentId: string;
@@ -21,5 +15,18 @@ export class TerraformRepoStack extends cdk.Stack {
       repositoryName: props.repoName,
       description: 'Repo of Terraform constructs for deployment'
     });
+
+    new cdk.CfnOutput(this, 'stackId', {
+        value: props.deploymentId,
+    });
+
+    new cdk.CfnOutput(this, 'repoName', {
+        value: props.repoName,
+    });
+    
+    new cdk.CfnOutput(this, 'repoUrl', {
+        value: infraRepo.repositoryCloneUrlHttp,
+    });
+
   }
 }
