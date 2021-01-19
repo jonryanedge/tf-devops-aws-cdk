@@ -9,22 +9,24 @@ const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT
 }
 
+const stackId = Math.random().toString(33).substring(3,7);
+
 const params = {
-    deploymentId: Math.random().toString(36).substring(2, 15),
-    dbLockTable: 'tf-State-Lock',
-    repoName: 'tfCoreNetwork-Test',
+    deploymentId: stackId,
+    dbLockTable: 'tf-Lock-' + stackId,
+    repoName: 'tf-Repo-' + stackId,
 }
 
 const app = new cdk.App();
 new TerraformRepoStack(app, 'repo', {
     env: env,
     deploymentId: params.deploymentId,
-    repoName: params.repoName + '-' + params.deploymentId
+    repoName: params.repoName
 });
 
 new TerraformPipelineStack(app, 'pipeline', {
     env: env,
     deploymentId: params.deploymentId,
-    dbLockTable: params.dbLockTable+ '-' + params.deploymentId,
+    dbLockTable: params.dbLockTable,
     repoName: params.repoName
 });
