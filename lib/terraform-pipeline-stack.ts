@@ -6,13 +6,19 @@ import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as build from '@aws-cdk/aws-codebuild';
 import * as db from '@aws-cdk/aws-dynamodb';
 
+interface TfStackProps extends cdk.StackProps {
+  deploymentId: string;
+  repoName: string;
+  dbLockTable: string;
+}
+
 export class TerraformPipelineStack extends cdk.Stack {
-  constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: cdk.Construct, id: string, props: TfStackProps) {
     super(scope, id, props);
 
     // The code that defines your stack goes here
     const infraRepo = new codecommit.Repository(this, 'networkRepo', {
-      repositoryName: 'tfCoreNetwork',
+      repositoryName: props.repoName,
       description: 'Repo of Terraform constructs for deployment'
     });
 
@@ -21,7 +27,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     const tfDatabase = new db.Table(this, 'tf-state-lock', {
-      tableName: 'db-tfState',
+      tableName: props.dbLockTable,
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
     })
 
