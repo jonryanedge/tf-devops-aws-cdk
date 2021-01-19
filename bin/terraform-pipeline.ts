@@ -5,5 +5,5 @@ import { TerraformPipelineStack } from '../lib/terraform-pipeline-stack';
 
 const app = new cdk.App();
 new TerraformPipelineStack(app, 'TerraformPipelineStack', {
-    env: { region: 'us-east-1' }
+    env: { region: 'ca-central-1' }
 });
