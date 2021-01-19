@@ -1,6 +1,7 @@
 import * as cdk from '@aws-cdk/core';
 import * as codecommit from '@aws-cdk/aws-codecommit';
 import * as s3 from '@aws-cdk/aws-s3';
+import * as iam from '@aws-cdk/aws-iam';
 import * as pipeline from '@aws-cdk/aws-codepipeline';
 import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as build from '@aws-cdk/aws-codebuild';
@@ -8,8 +9,8 @@ import * as db from '@aws-cdk/aws-dynamodb';
 
 interface TfStackProps extends cdk.StackProps {
   deploymentId: string;
-  repoName: string;
   dbLockTable: string;
+  repoName: string;
 }
 
 export class TerraformPipelineStack extends cdk.Stack {
@@ -17,11 +18,6 @@ export class TerraformPipelineStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-    const infraRepo = new codecommit.Repository(this, 'networkRepo', {
-      repositoryName: props.repoName,
-      description: 'Repo of Terraform constructs for deployment'
-    });
-
     const pipelineBucket = new s3.Bucket(this, 'pipelineBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
@@ -29,11 +25,24 @@ export class TerraformPipelineStack extends cdk.Stack {
     const tfDatabase = new db.Table(this, 'tf-state-lock', {
       tableName: props.dbLockTable,
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
-    })
+    });
+
+    const tfPipelineRole = new iam.Role(this, 'tfPipelineRole', {
+      roleName: 'tfPipelineRole-' + props.deploymentId,
+      assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
+      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
+    });
+
+    const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
+      roleName: 'tfBuildRole-' + props.deploymentId,
+      assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
+      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
+    });
 
     const srcOutput = new pipeline.Artifact();
     const tfBuildOutput = new pipeline.Artifact('tfBuildOutput');
     const terraformPipeline = new pipeline.Pipeline(this, 'terraformPipeline', {
+      role: tfPipelineRole,
       artifactBucket: pipelineBucket,
       stages: [
         {
@@ -41,7 +50,7 @@ export class TerraformPipelineStack extends cdk.Stack {
           actions: [
             new actions.CodeCommitSourceAction({
               actionName: 'CodeCommit_Source',
-              repository: infraRepo,
+              repository: codecommit.Repository.fromRepositoryName(this, 'infraRepo', props.repoName),
               output: srcOutput
             }),
           ],
@@ -50,6 +59,7 @@ export class TerraformPipelineStack extends cdk.Stack {
           stageName: 'Build',
           actions: [
             new actions.CodeBuildAction({
+              role: tfBuildRole,
               actionName: 'Terraform_Build',
               project: new build.PipelineProject(this, 'TerraformBuild', {
                 environment: {

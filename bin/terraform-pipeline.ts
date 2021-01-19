@@ -2,16 +2,31 @@
 import 'source-map-support/register';
 import * as cdk from '@aws-cdk/core';
 import { TerraformPipelineStack } from '../lib/terraform-pipeline-stack';
+import { TerraformRepoStack } from '../lib/terraform-repo-stack';
 
 const env = {
     region: 'ca-central-1',
     account: process.env.CDK_DEFAULT_ACCOUNT
 }
 
-const app = new cdk.App();
-new TerraformPipelineStack(app, 'TerraformPipelineStack', {
-    env: env,
+const params = {
     deploymentId: 'Test',
+    dbLockTable: 'tfDbLock-Test',
     repoName: 'tfCoreNetwork-Test',
-    dbLockTable: 'tfDbLock-Test'
+}
+
+const app = new cdk.App();
+
+new TerraformRepoStack(app, 'repo', {
+    env: env,
+    deploymentId: params.deploymentId,
+    repoName: params.repoName
 });
+
+new TerraformPipelineStack(app, 'pipeline', {
+    env: env,
+    deploymentId: params.deploymentId,
+    dbLockTable: 'tfDbLock-Test',
+    repoName: params.repoName
+});
+
