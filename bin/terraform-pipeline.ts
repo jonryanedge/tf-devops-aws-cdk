@@ -5,7 +5,7 @@ import { TerraformRepoStack } from '../lib/terraform-repo-stack';
 import { TerraformPipelineStack } from '../lib/terraform-pipeline-stack';
 
 const env = {
-    region: 'ca-central-1',
+    region: 'us-west-1',
     account: process.env.CDK_DEFAULT_ACCOUNT
 }
 
