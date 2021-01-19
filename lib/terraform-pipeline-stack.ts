@@ -18,7 +18,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-    const pipelineBucket = new s3.Bucket(this, 'tfPipelineBucket', {
+    const pipelineBucket = new s3.Bucket(this, 'artifacts', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
