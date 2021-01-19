@@ -18,7 +18,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     super(scope, id, props);
 
     // The code that defines your stack goes here
-    const pipelineBucket = new s3.Bucket(this, 'pipelineBucket', {
+    const pipelineBucket = new s3.Bucket(this, 'tfPipelineBucket', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
     });
 
@@ -30,14 +30,15 @@ export class TerraformPipelineStack extends cdk.Stack {
     const tfPipelineRole = new iam.Role(this, 'tfPipelineRole', {
       roleName: 'tfPipelineRole-' + props.deploymentId,
       assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
-      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
     });
 
-    const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
-      roleName: 'tfBuildRole-' + props.deploymentId,
-      assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
-      managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
-    });
+    tfPipelineRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+
+    // const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
+    //   roleName: 'tfBuildRole-' + props.deploymentId,
+    //   assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
+    //   managedPolicies: [ iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess') ],
+    // });
 
     const srcOutput = new pipeline.Artifact();
     const tfBuildOutput = new pipeline.Artifact('tfBuildOutput');
@@ -59,7 +60,7 @@ export class TerraformPipelineStack extends cdk.Stack {
           stageName: 'Build',
           actions: [
             new actions.CodeBuildAction({
-              role: tfBuildRole,
+              role: tfPipelineRole,
               actionName: 'Terraform_Build',
               project: new build.PipelineProject(this, 'TerraformBuild', {
                 environment: {
@@ -77,6 +78,6 @@ export class TerraformPipelineStack extends cdk.Stack {
           ],
         }
       ]
-    })
+    });
   }
 }
