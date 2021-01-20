@@ -24,7 +24,7 @@ new TerraformRepoStack(app, 'repo', {
     repoName: params.repoName
 });
 
-new TerraformPipelineStack(app, 'pipeline', {
+new TerraformPipelineStack(app, 'tfBuild', {
     env: env,
     deploymentId: params.deploymentId,
     dbLockTable: params.dbLockTable,

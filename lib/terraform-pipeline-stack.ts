@@ -57,6 +57,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     const srcOutput = new pipeline.Artifact();
     const tfBuildOutput = new pipeline.Artifact('tfBuildOutput');
     const terraformPipeline = new pipeline.Pipeline(this, 'terraformPipeline', {
+      pipelineName: 'tfPipeline-' + props.deploymentId,
       role: tfPipelineRole,
       artifactBucket: pBucket,
       stages: [
@@ -76,7 +77,9 @@ export class TerraformPipelineStack extends cdk.Stack {
             new actions.CodeBuildAction({
               role: tfPipelineRole,
               actionName: 'Terraform_Build',
-              project: new build.PipelineProject(this, 'TerraformBuild', {
+              project: new build.PipelineProject(this, 'tfBuild', {
+                projectName: 'tfBuildProj-' + props.deploymentId,
+                role: tfPipelineRole,
                 environment: {
                   buildImage: build.LinuxBuildImage.STANDARD_4_0,
                   privileged: true,
