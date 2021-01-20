@@ -9,7 +9,7 @@ const env = {
     account: process.env.CDK_DEFAULT_ACCOUNT
 }
 
-const stackId = Math.random().toString(33).substring(3,7);
+const stackId = Math.random().toString(33).substring(3,8);
 
 const params = {
     deploymentId: stackId,

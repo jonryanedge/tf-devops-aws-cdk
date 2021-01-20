@@ -20,7 +20,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     // define bucket for pipeline artifacts
     const pBucket = new s3.Bucket(this, 'artifacts', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      bucketName: props.deploymentId + '-pArtifacts',
+      bucketName: props.deploymentId + '-artifacts',
     });
 
     const tfDb = new db.Table(this, 'tfDb', {
