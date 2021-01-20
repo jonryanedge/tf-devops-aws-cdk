@@ -6,7 +6,6 @@ import * as pipeline from '@aws-cdk/aws-codepipeline';
 import * as actions from '@aws-cdk/aws-codepipeline-actions';
 import * as build from '@aws-cdk/aws-codebuild';
 import * as db from '@aws-cdk/aws-dynamodb';
-import { TerraformRepoStack } from './terraform-repo-stack';
 
 interface TfStackProps extends cdk.StackProps {
   deploymentId: string;
@@ -37,16 +36,12 @@ export class TerraformPipelineStack extends cdk.Stack {
 
     const tfPipelineRole = new iam.Role(this, 'tfPipelineRole', {
       roleName: 'tfPipelineRole-' + props.deploymentId,
-      assumedBy: new iam.ServicePrincipal('codepipeline.amazonaws.com'),
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ServicePrincipal('codebuild.amazonaws.com'),
+        new iam.ServicePrincipal('codepipeline.amazonaws.com'),
+        new iam.AccountPrincipal(props.env?.account)
+      ),
     });
-
-    const tfBuildRole = new iam.Role(this, 'tfBuildRole', {
-      roleName: 'tfBuildRole-' + props.deploymentId,
-      assumedBy: new iam.ServicePrincipal('codebuild.amazonaws.com'),
-    });
-
-    tfPipelineRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
-    tfBuildRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
 
     tfPipelineRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
