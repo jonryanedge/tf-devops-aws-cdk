@@ -1,14 +1,19 @@
-# Welcome to your CDK TypeScript project!
+# AWS CodePipeline for Infrastructure as Code (IaC) with Terraform
 
-This is a blank project for TypeScript development with CDK.
+Deploying this CDK stack will create an AWS CodePipeline linked to a CodeCommit repo and 
+CodeBuild project to use for deploying AWS resources using Terraform
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+## Prerequisites
 
-## Useful commands
+[AWS CDK Toolkit Guide](https://docs.aws.amazon.com/cdk/latest/guide/cli.html)
 
- * `npm run build`   compile typescript to js
- * `npm run watch`   watch for changes and compile
- * `npm run test`    perform the jest unit tests
+
+## Starter commands
+
+ * `npm install`     install required modules prior to deployment
+ * `cdk ls`          list available stacks to deploy
+ * `cdk synth`       emits the synthesized CloudFormation template
  * `cdk deploy`      deploy this stack to your default AWS account/region
  * `cdk diff`        compare deployed stack with current state
- * `cdk synth`       emits the synthesized CloudFormation template
+ * `cdk deploy --all --auto-approve`    uninterrupted deploymen of all stacks
+ 
