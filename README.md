@@ -1,7 +1,9 @@
 # AWS CodePipeline for Infrastructure as Code (IaC) with Terraform
 
-Deploying this CDK stack will create an AWS CodePipeline linked to a CodeCommit repo and 
-CodeBuild project to use for deploying AWS resources using Terraform
+Deploying this CDK stack will create an AWS CodePipeline using a CodeBuild project and a CodeCommit repo 
+for hosting Terraform code that builds AWS infrastructure. Terraform state is managed separately using an 
+S3 bucket and DynamoDb table. The CDK app produces outputs after completion that make transitioning to 
+the Terraform build seamless.
 
 ## Prerequisites
 
@@ -25,3 +27,11 @@ CodeBuild project to use for deploying AWS resources using Terraform
  * `cdk diff`        compare deployed stack with current state
  * `cdk deploy --all --request-approval never`    uninterrupted deployment of all stacks
  
+## Deployed Resources
+
+1. CodeCommit Repo - to maintain the Terraform codebase
+2. S3 Bucket - for Terraform state files
+3. DynamoDb table - for Terraform state lock sequencing
+4. CodePipeline Resources
+  * Artifacts S3 Bucket
+  * Event Watcher
