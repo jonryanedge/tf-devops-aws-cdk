@@ -129,8 +129,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'start-command', {
-      value: 'aws codepipeline start-pipeline-execution --name ' + terraformPipeline.pipelineName
-    })
-
+      value: 'aws codepipeline start-pipeline-execution --name ' + terraformPipeline.pipelineName,
+    });
   }
 }
