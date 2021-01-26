@@ -37,6 +37,7 @@ export class TerraformPipelineStack extends cdk.Stack {
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
     });
 
+    // define combo role for pipeline and build
     const tfPipelineRole = new iam.Role(this, 'tfPipelineRole', {
       roleName: 'tfPipelineRole-' + props.deploymentId,
       assumedBy: new iam.CompositePrincipal(
@@ -46,6 +47,7 @@ export class TerraformPipelineStack extends cdk.Stack {
       ),
     });
 
+    // define permissions in a policy statement
     tfPipelineRole.addToPolicy(new iam.PolicyStatement({
       effect: iam.Effect.ALLOW,
       resources: ['*'],
@@ -110,20 +112,25 @@ export class TerraformPipelineStack extends cdk.Stack {
       value: pBucket.bucketName,
     });
 
+    new cdk.CfnOutput(this, 'repoBranch', {
+      value: props.tfPipelineBranch,
+    });
+
     new cdk.CfnOutput(this, 'repoName', {
         value: pRepo.repositoryName,
-    });
-    
-    new cdk.CfnOutput(this, 'repoUrl', {
-        value: pRepo.repositoryCloneUrlHttp,
     });
 
     new cdk.CfnOutput(this, 'repoSsh', {
       value: pRepo.repositoryCloneUrlSsh,
     });
 
-    new cdk.CfnOutput(this, 'repoBranch', {
-      value: props.tfPipelineBranch,
+    new cdk.CfnOutput(this, 'repoUrl', {
+      value: pRepo.repositoryCloneUrlHttp,
     });
+
+    new cdk.CfnOutput(this, 'start-command', {
+      value: 'aws codepipeline start-pipeline-execution --name ' + terraformPipeline.pipelineName
+    })
+
   }
 }
