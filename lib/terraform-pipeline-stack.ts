@@ -9,8 +9,9 @@ import * as db from '@aws-cdk/aws-dynamodb';
 
 interface TfStackProps extends cdk.StackProps {
   deploymentId: string;
-  dbLockTable: string;
-  repoName: string;
+  tfBucketName: string;
+  tfLockTableName: string;
+  tfRepoName: string;
 }
 
 export class TerraformPipelineStack extends cdk.Stack {
@@ -19,18 +20,18 @@ export class TerraformPipelineStack extends cdk.Stack {
 
     // deploy pipeline repo
     const pRepo = new codecommit.Repository(this, 'networkRepo', {
-      repositoryName: props.repoName,
+      repositoryName: props.tfRepoName,
       description: 'Repo of Terraform constructs for deployment'
     });
 
     // define bucket for pipeline artifacts
     const pBucket = new s3.Bucket(this, 'artifacts', {
       blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
-      bucketName: props.deploymentId + '-artifacts',
+      bucketName: props.tfBucketName,
     });
 
     const tfDb = new db.Table(this, 'tfDb', {
-      tableName: props.dbLockTable,
+      tableName: props.tfLockTableName,
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
     });
 
@@ -79,7 +80,9 @@ export class TerraformPipelineStack extends cdk.Stack {
                   buildImage: build.LinuxBuildImage.STANDARD_4_0,
                   privileged: true,
                   environmentVariables: {
-                    TF_COMMAND: { value: 'apply', type: build.BuildEnvironmentVariableType.PLAINTEXT }
+                    TF_COMMAND: { value: 'apply', type: build.BuildEnvironmentVariableType.PLAINTEXT },
+                    TF_BUCKET: { value: pBucket.bucketName, type: build.BuildEnvironmentVariableType.PLAINTEXT },
+                    TF_TABLE: { value: tfDb.tableName, type: build.BuildEnvironmentVariableType.PLAINTEXT }
                   }
                 },
                 buildSpec: build.BuildSpec.fromSourceFilename(''),
@@ -97,7 +100,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'dbTableName', {
-      value: props.dbLockTable,
+      value: props.tfLockTableName,
     });
 
     new cdk.CfnOutput(this, 'bucketName', {
@@ -105,7 +108,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'repoName', {
-        value: props.repoName,
+        value: props.tfRepoName,
     });
     
     new cdk.CfnOutput(this, 'repoUrl', {
