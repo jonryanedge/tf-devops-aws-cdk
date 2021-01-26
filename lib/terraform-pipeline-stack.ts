@@ -12,6 +12,7 @@ interface TfStackProps extends cdk.StackProps {
   tfBucketName: string;
   tfLockTableName: string;
   tfRepoName: string;
+  tfPipelineBranch: string;
 }
 
 export class TerraformPipelineStack extends cdk.Stack {
@@ -30,6 +31,7 @@ export class TerraformPipelineStack extends cdk.Stack {
       bucketName: props.tfBucketName,
     });
 
+    // define dynamo db table for tf state locking
     const tfDb = new db.Table(this, 'tfDb', {
       tableName: props.tfLockTableName,
       partitionKey: { name: 'LockID', type: db.AttributeType.STRING },
@@ -63,6 +65,7 @@ export class TerraformPipelineStack extends cdk.Stack {
             new actions.CodeCommitSourceAction({
               actionName: 'CodeCommit_Source',
               repository: pRepo,
+              branch: props.tfPipelineBranch,
               output: srcOutput
             }),
           ],
@@ -100,7 +103,7 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'dbTableName', {
-      value: props.tfLockTableName,
+      value: tfDb.tableName,
     });
 
     new cdk.CfnOutput(this, 'bucketName', {
@@ -108,11 +111,19 @@ export class TerraformPipelineStack extends cdk.Stack {
     });
 
     new cdk.CfnOutput(this, 'repoName', {
-        value: props.tfRepoName,
+        value: pRepo.repositoryName,
     });
     
     new cdk.CfnOutput(this, 'repoUrl', {
         value: pRepo.repositoryCloneUrlHttp,
+    });
+
+    new cdk.CfnOutput(this, 'repoSsh', {
+      value: pRepo.repositoryCloneUrlSsh,
+    });
+
+    new cdk.CfnOutput(this, 'repoBranch', {
+      value: props.tfPipelineBranch,
     });
   }
 }
