@@ -4,9 +4,13 @@ import * as cdk from '@aws-cdk/core';
 import { TerraformPipelineStack } from '../lib/terraform-pipeline-stack';
 
 // specify the region if different from profile or if needed to update a specific stackId
+const deployRegion = '';
+const deployAcct = '';
+
+
 const env = {
-    region: 'us-west-1',
-    account: process.env.CDK_DEFAULT_ACCOUNT
+    region: deployRegion || process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION ,
+    account: deployAcct || process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT
 };
 
 // add a stackId string to update or destroy a specific stack in the region listed above (21/1/21)
