@@ -87,7 +87,8 @@ export class TerraformPipelineStack extends cdk.Stack {
                   environmentVariables: {
                     TF_COMMAND: { value: 'apply', type: build.BuildEnvironmentVariableType.PLAINTEXT },
                     TF_BUCKET: { value: pBucket.bucketName, type: build.BuildEnvironmentVariableType.PLAINTEXT },
-                    TF_TABLE: { value: tfDb.tableName, type: build.BuildEnvironmentVariableType.PLAINTEXT }
+                    TF_TABLE: { value: tfDb.tableName, type: build.BuildEnvironmentVariableType.PLAINTEXT },
+                    TF_REGION: { value: this.region, type: build.BuildEnvironmentVariableType.PLAINTEXT }
                   }
                 },
                 buildSpec: build.BuildSpec.fromSourceFilename(''),

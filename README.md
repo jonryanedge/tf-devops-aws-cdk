@@ -26,13 +26,13 @@ Deploying this CDK stack will create an AWS CodePipeline using a CodeBuild proje
 ```
   backend "s3" {
     encrypt = true
-    bucket = "BUCKET"
-    dynamodb_table = "TABLE"
+    bucket = "TFBUCKET"
+    dynamodb_table = "TFTABLE"
     key = "terraform.tfstate" 
-    region = <REGION>
+    region = "TFREGION"
   }
 ```
-* `BUCKET` and `TABLE` must be included for the pipeline variables to replace these values during the build stage
+* `TFBUCKET`, `TFTABLE`, and `TFREGION` must be included for the pipeline variables to replace these values during the build stage
 
 ## Starter commands
 

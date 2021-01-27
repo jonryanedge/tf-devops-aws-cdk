@@ -14,7 +14,7 @@ const env = {
 };
 
 // add a stackId string to update or destroy a specific stack in the region listed above (21/1/21)
-const stackId = '';
+const stackId = 'q9t7e';
 const branchId = 'main';  // which branch should the pipeline track
 
 // only change needed in this file is the stackId above (21/1/21)
